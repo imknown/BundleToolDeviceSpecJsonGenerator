@@ -9,5 +9,11 @@ data class DeviceSpecJson(
     val deviceFeatures: List<String>?,
     val glExtensions: List<String>?,
     val screenDensity: Int,
-    val sdkVersion: Int
+    val sdkVersion: Int,
+    val sdkRuntime: MainViewModel.SdkRuntime,
+    val ramBytes: String,
+    val buildBrand: String,
+    val buildDevice: String,
+    val socManufacturer: String?,
+    val socModel: String?
 )
