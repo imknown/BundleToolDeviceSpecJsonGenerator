@@ -8,12 +8,12 @@ buildToolsPreview = "36.0.0"
 minSdk = "21"
 
 compileSdk = "36"
-compileSdkPreview = "C"
+compileSdkPreview = "CANARY"
 
 compileSdkExtension = "17" # 36-ext17 (Android 16 Beta 3)
 
 targetSdk = "36"
-targetSdkPreview = "C"
+targetSdkPreview = "CANARY"
 
 agp = "8.12.0"
 
