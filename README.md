@@ -3,4 +3,29 @@
 > https://developer.android.com/platform/technology/app-bundle  
 > https://developer.android.com/studio/command-line/bundletool
 
-Based on version `1.18.1 (2025-03-06)`
+## Sample
+Based on version `1.18.3 (2025-12-16)`
+
+``` shell
+bundletool get-device-spec --output=device-spec.json
+```
+
+> device-spec.json
+``` json
+{
+  "supportedAbis": ["x86_64", "arm64-v8a"],
+  "supportedLocales": ["en-US"],
+  "deviceFeatures": ["reqGlEsVersion\u003d0x30000", "android.hardware.audio.output", "android.hardware.bluetooth", "android.hardware.bluetooth_le", "android.hardware.camera", "android.hardware.camera.any", "android.hardware.camera.autofocus", "android.hardware.camera.capability.manual_post_processing", "android.hardware.camera.capability.manual_sensor", "android.hardware.camera.capability.raw", "android.hardware.camera.concurrent", "android.hardware.camera.flash", "android.hardware.camera.front", "android.hardware.camera.level.full", "android.hardware.context_hub", "android.hardware.faketouch", "android.hardware.fingerprint", "android.hardware.hardware_keystore\u003d400", "android.hardware.identity_credential\u003d202301", "android.hardware.keystore.app_attest_key", "android.hardware.location", "android.hardware.location.gps", "android.hardware.location.network", "android.hardware.microphone", "android.hardware.ram.normal", "android.hardware.reboot_escrow", "android.hardware.screen.landscape", "android.hardware.screen.portrait", "android.hardware.security.model.compatible", "android.hardware.sensor.accelerometer", "android.hardware.sensor.ambient_temperature", "android.hardware.sensor.barometer", "android.hardware.sensor.compass", "android.hardware.sensor.gyroscope", "android.hardware.sensor.light", "android.hardware.sensor.proximity", "android.hardware.sensor.relative_humidity", "android.hardware.telephony", "android.hardware.telephony.calling", "android.hardware.telephony.data", "android.hardware.telephony.gsm", "android.hardware.telephony.ims", "android.hardware.telephony.messaging", "android.hardware.telephony.radio.access", "android.hardware.telephony.subscription", "android.hardware.thread_network", "android.hardware.touchscreen", "android.hardware.touchscreen.multitouch", "android.hardware.touchscreen.multitouch.distinct", "android.hardware.touchscreen.multitouch.jazzhand", "android.hardware.uwb", "android.hardware.vulkan.compute", "android.hardware.vulkan.level\u003d1", "android.hardware.vulkan.version\u003d4206592", "android.hardware.wifi", "android.hardware.wifi.direct", "android.hardware.wifi.passpoint", "android.software.activities_on_secondary_displays", "android.software.adoptable_storage", "android.software.app_enumeration", "android.software.app_widgets", "android.software.autofill", "android.software.backup", "android.software.cant_save_state", "android.software.companion_device_setup", "android.software.controls", "android.software.credentials", "android.software.cts", "android.software.device_admin", "android.software.device_lock", "android.software.erofs", "android.software.file_based_encryption", "android.software.home_screen", "android.software.incremental_delivery\u003d2", "android.software.input_methods", "android.software.ipsec_tunnel_migration", "android.software.ipsec_tunnels", "android.software.live_wallpaper", "android.software.managed_users", "android.software.midi", "android.software.opengles.deqp.level\u003d132711169", "android.software.picture_in_picture", "android.software.print", "android.software.secure_lock_screen", "android.software.securely_removes_users", "android.software.telecom", "android.software.verified_boot", "android.software.virtualization_framework", "android.software.voice_recognizers", "android.software.vulkan.deqp.level\u003d132711169", "android.software.webview", "android.software.window_magnification", "com.google.android.apps.dialer.SUPPORTED", "com.google.android.feature.EXCHANGE_6_2", "com.google.android.feature.GOOGLE_BUILD", "com.google.android.feature.GOOGLE_EXPERIENCE", "com.google.android.feature.PERSONAL_SAFETY", "com.google.android.feature.WELLBEING", "com.google.android.feature.XR_PROJECTED", "com.google.android.mainline.patchlevel.2"],
+  "glExtensions": ["GL_EXT_debug_marker", "GL_EXT_robustness", "GL_OES_EGL_sync", "GL_OES_EGL_image", "GL_OES_EGL_image_external", "GL_OES_depth24", "GL_OES_depth32", "GL_OES_element_index_uint", "GL_OES_texture_float", "GL_OES_texture_float_linear", "GL_OES_compressed_paletted_texture", "GL_OES_compressed_ETC1_RGB8_texture", "GL_OES_depth_texture", "GL_OES_texture_npot", "GL_OES_rgb8_rgba8", "GL_EXT_color_buffer_float", "GL_EXT_color_buffer_half_float", "GL_EXT_texture_format_BGRA8888", "GL_APPLE_texture_format_BGRA8888", "ANDROID_EMU_CHECKSUM_HELPER_v1", "ANDROID_EMU_native_sync_v2", "ANDROID_EMU_native_sync_v3", "ANDROID_EMU_native_sync_v4", "ANDROID_EMU_dma_v1", "ANDROID_EMU_direct_mem", "ANDROID_EMU_host_composition_v1", "ANDROID_EMU_host_composition_v2", "ANDROID_EMU_vulkan", "ANDROID_EMU_deferred_vulkan_commands", "ANDROID_EMU_vulkan_null_optional_strings", "ANDROID_EMU_vulkan_create_resources_with_requirements", "ANDROID_EMU_YUV_Cache", "ANDROID_EMU_vulkan_ignored_handles", "ANDROID_EMU_has_shared_slots_host_memory_allocator", "ANDROID_EMU_vulkan_free_memory_sync", "ANDROID_EMU_vulkan_shader_float16_int8", "ANDROID_EMU_vulkan_async_queue_submit", "ANDROID_EMU_vulkan_queue_submit_with_commands", "ANDROID_EMU_sync_buffer_data", "ANDROID_EMU_vulkan_async_qsri", "ANDROID_EMU_read_color_buffer_dma", "ANDROID_EMU_hwc_multi_configs", "ANDROID_EMU_hwc_color_transform", "GL_OES_EGL_image_external_essl3", "GL_OES_vertex_array_object", "GL_KHR_texture_compression_astc_ldr", "ANDROID_EMU_host_side_tracing", "ANDROID_EMU_gles_max_version_3_0"],
+  "screenDensity": 320,
+  "sdkVersion": 36,
+  "sdkRuntime": {
+    "supported": true
+  },
+  "ramBytes": "2062389248",
+  "buildBrand": "google",
+  "buildDevice": "emu64xa",
+  "socManufacturer": "AOSP",
+  "socModel": "ranchu"
+}
+```

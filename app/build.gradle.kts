@@ -1,27 +1,32 @@
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlinx.serialization)
 }
+
+private val buildVersion = libs.versions
 
 android {
     namespace = "net.imknown.android.bundletooldevicespecjsongenerator"
 
-    compileSdk = libs.versions.compileSdk.get().toInt()
-    // compileSdkExtension = libs.versions.compileSdkExtension.get().toInt()
-    buildToolsVersion = libs.versions.buildTools.get()
-    val isPreview = libs.versions.isPreview.get().toBoolean()
-    if (isPreview) {
-        compileSdkPreview = libs.versions.compileSdkPreview.get()
-        buildToolsVersion = libs.versions.buildToolsPreview.get()
+    val isPreview = buildVersion.isPreview.get().toBoolean()
+    compileSdk {
+        version = if (isPreview) {
+            preview(buildVersion.compileSdkPreview.get())
+        } else {
+            release(buildVersion.compileSdk.get().toInt()) {
+                minorApiLevel = buildVersion.compileSdkMinor.get().toInt()
+                // sdkExtension = buildVersion.compileSdkExtension.get().toInt()
+            }
+        }
     }
+    buildToolsVersion = (if (isPreview) buildVersion.buildToolsPreview else buildVersion.buildTools).get()
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk = buildVersion.minSdk.get().toInt()
 
-        targetSdk = libs.versions.targetSdk.get().toInt()
+        targetSdk = buildVersion.targetSdk.get().toInt()
         if (isPreview) {
-            targetSdkPreview = libs.versions.targetSdkPreview.get()
+            targetSdkPreview = buildVersion.targetSdkPreview.get()
         }
 
         versionCode = 1
@@ -61,7 +66,7 @@ android {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 dependencies {
