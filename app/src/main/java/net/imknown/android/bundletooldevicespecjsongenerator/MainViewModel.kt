@@ -31,7 +31,7 @@ class MainViewModel : ViewModel() {
             val supportedAbis = fetchSupportedAbis()
             val supportedLocales = fetchSupportedLocales()
             val deviceFeatures = fetchDeviceFeatures(context)
-            val screenDensity = fetchScreenDensity(context)
+            val screenDensity = fetchScreenDensityPhysical(context)
             val sdkVersion = fetchSdkVersion()
             val sdkRuntime = fetchSdkRuntime()
             val ramBytes = fetchRamBytes(context)
@@ -50,7 +50,7 @@ class MainViewModel : ViewModel() {
 
             DeviceSpecJson(
                 supportedAbis, supportedLocales, deviceFeatures,
-                glExtensions, screenDensity, sdkVersion,
+                glExtensions, screenDensity.toInt(), sdkVersion,
                 sdkRuntime, ramBytes.toString(), buildBrand, buildDevice,
                 socManufacturer, socModel
             )
@@ -98,7 +98,8 @@ class MainViewModel : ViewModel() {
         }
 
     // wm density
-    private fun fetchScreenDensity(context: Context): Int = context.resources.configuration.densityDpi
+    private fun fetchScreenDensityLogical(context: Context): Int = context.resources.configuration.densityDpi
+    private fun fetchScreenDensityPhysical(context: Context): Float = context.resources.displayMetrics.xdpi
 
     // getprop ro.build.version.sdk
     private fun fetchSdkVersion(): Int = Build.VERSION.SDK_INT
