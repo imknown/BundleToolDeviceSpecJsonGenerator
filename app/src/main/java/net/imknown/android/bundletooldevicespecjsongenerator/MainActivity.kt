@@ -9,16 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.getSystemService
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.imknown.android.bundletooldevicespecjsongenerator.databinding.ActivityMainBinding
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class MainActivity : AppCompatActivity() {
     private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
@@ -61,7 +60,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // dumpsys SurfaceFlinger | grep 'SurfaceFlinger global state:' -A 4
-    private suspend fun fetchGlExtensions(): List<String> = suspendCoroutine {
+    private suspend fun fetchGlExtensions(): List<String> = suspendCancellableCoroutine {
         val glSurfaceView = GLSurfaceView(this)
         flContainer.addView(glSurfaceView)
         this.glSurfaceView = glSurfaceView
@@ -70,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         glSurfaceView.setRenderer(object : GLSurfaceView.Renderer {
             override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
                 runOnUiThread {
-                    glSurfaceView.isVisible = false
+                    flContainer.removeView(glSurfaceView)
                 }
                 val glExtensionsString = gl.glGetString(GL10.GL_EXTENSIONS)
                 val glExtensions = glExtensionsString.trim().split(" ")
