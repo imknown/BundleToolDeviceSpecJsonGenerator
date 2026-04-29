@@ -1,30 +1,49 @@
 package net.imknown.android.bundletooldevicespecjsongenerator
 
 import android.app.ActivityManager
+import android.content.Context
 import android.opengl.GLSurfaceView
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.getSystemService
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.updatePadding
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import net.imknown.android.bundletooldevicespecjsongenerator.databinding.ActivityMainBinding
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.coroutines.resume
 
-class MainActivity : AppCompatActivity() {
-    private val binding by lazy { ActivityMainBinding.inflate(layoutInflater) }
-
-    private var glSurfaceView: GLSurfaceView? = null
-    private val flContainer by lazy { binding.flContainer }
-    private val tvResult by lazy { binding.tvResult }
+class MainActivity : ComponentActivity() {
 
     private val viewModel by viewModels<MainViewModel>()
 
@@ -33,72 +52,136 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
 
-        setContentView(binding.root)
-
-        ViewCompat.setOnApplyWindowInsetsListener(flContainer) { view, windowInsets ->
-            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            view.updatePadding(
-                left = insets.left,
-                right = insets.right,
-                top = insets.top,
-                bottom = insets.bottom
-            )
-
-            windowInsets
-        }
-
-        lifecycleScope.launch {
-            viewModel.resultStateFlow.flowWithLifecycle(lifecycle).collect {
-                tvResult.text = it
-            }
-        }
-
-        lifecycleScope.launch {
-            val glExtensions = fetchGlExtensions()
-            viewModel.fetch(this@MainActivity, glExtensions)
-        }
-    }
-
-    // dumpsys SurfaceFlinger | grep 'SurfaceFlinger global state:' -A 4
-    private suspend fun fetchGlExtensions(): List<String> = suspendCancellableCoroutine {
-        val glSurfaceView = GLSurfaceView(this)
-        flContainer.addView(glSurfaceView)
-        this.glSurfaceView = glSurfaceView
-
-        glSurfaceView.setEGLContextClientVersion(fetchOpenGlEsVersionMajor())
-        glSurfaceView.setRenderer(object : GLSurfaceView.Renderer {
-            override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
-                runOnUiThread {
-                    flContainer.removeView(glSurfaceView)
+        setContent {
+            AppTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    val resultText by viewModel.resultStateFlow.collectAsStateWithLifecycle()
+                    MainScreen(
+                        resultText = resultText,
+                        onExtensionsFetched = { glExtensions ->
+                            viewModel.viewModelScope.launch {
+                                viewModel.fetch(this@MainActivity, glExtensions)
+                            }
+                        }
+                    )
                 }
-                val glExtensionsString = gl.glGetString(GL10.GL_EXTENSIONS)
-                val glExtensions = glExtensionsString.trim().split(" ")
-                it.resume(glExtensions)
             }
+        }
+    }
+}
 
-            override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {
-            }
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
 
-            override fun onDrawFrame(gl: GL10) {
-            }
-        })
+        darkTheme -> darkColorScheme()
+        else -> lightColorScheme()
     }
 
-    private fun fetchOpenGlEsVersionMajor(): Int {
-        val activityManager = getSystemService<ActivityManager>()
-        val configInfo = activityManager?.deviceConfigurationInfo
-        val glEsVersion = configInfo?.glEsVersion
-        val major = glEsVersion?.substringBefore(".")
-        return major?.toInt() ?: MainViewModel.GL_ES_VERSION_2
-    }
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = content
+    )
+}
 
-    override fun onResume() {
-        super.onResume()
+@Composable
+fun MainScreen(
+    resultText: String,
+    onExtensionsFetched: (List<String>) -> Unit
+) {
+    var glExtensionsFetched by remember { mutableStateOf(false) }
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (!glExtensionsFetched) {
+            GlExtensionsFetcher(
+                onExtensionsFetched = { extensions ->
+                    onExtensionsFetched(extensions)
+                    glExtensionsFetched = true
+                }
+            )
+        }
+
+        ResultDisplay(text = resultText)
+    }
+}
+
+@Composable
+fun GlExtensionsFetcher(
+    modifier: Modifier = Modifier,
+    onExtensionsFetched: (List<String>) -> Unit
+) {
+    var glSurfaceView by remember { mutableStateOf<GLSurfaceView?>(null) }
+
+    LifecycleResumeEffect(glSurfaceView) {
         glSurfaceView?.onResume()
+        onPauseOrDispose {
+            glSurfaceView?.onPause()
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
-        glSurfaceView?.onPause()
+    AndroidView(
+        factory = { context ->
+            GLSurfaceView(context).apply {
+                setEGLContextClientVersion(fetchOpenGlEsVersionMajor(context))
+                setRenderer(object : GLSurfaceView.Renderer {
+                    override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
+                        val glExtensionsString = gl.glGetString(GL10.GL_EXTENSIONS)
+                        val glExtensions = glExtensionsString.trim().split(" ")
+
+                        onExtensionsFetched(glExtensions)
+                    }
+
+                    override fun onSurfaceChanged(gl: GL10, width: Int, height: Int) {}
+
+                    override fun onDrawFrame(gl: GL10) {}
+                })
+                glSurfaceView = this
+            }
+        },
+        modifier = modifier,
+        onRelease = {
+            it.onPause()
+            glSurfaceView = null
+        }
+    )
+}
+
+@Composable
+fun ResultDisplay(text: String, modifier: Modifier = Modifier) {
+    val systemBarsPadding = WindowInsets.systemBars.asPaddingValues()
+    SelectionContainer(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier
+                    .padding(systemBarsPadding),
+                fontSize = 12.sp
+            )
+        }
     }
+}
+
+private fun fetchOpenGlEsVersionMajor(context: Context): Int {
+    val activityManager = context.getSystemService<ActivityManager>()
+    val configInfo = activityManager?.deviceConfigurationInfo
+    val glEsVersion = configInfo?.glEsVersion
+    val major = glEsVersion?.substringBefore(".")
+    return major?.toInt() ?: MainViewModel.GL_ES_VERSION_2
 }

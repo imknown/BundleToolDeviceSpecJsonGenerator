@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.compose.compiler)
 }
 
 private val buildVersion = libs.versions
@@ -61,7 +62,7 @@ android {
     }
 
     buildFeatures {
-        viewBinding = true
+        compose = true
     }
 }
 
@@ -73,20 +74,22 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.material)
+    // Compose
+    val composeBom = platform(libs.androidx.compose.bom)
+    implementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
     // Core Android dependencies
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.savedstate)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.fragment.ktx)
-
-    // Arch Components
-    implementation(libs.androidx.constraintlayout)
-    implementation(libs.androidx.swiperefreshlayout)
 
     // Local tests: jUnit, coroutines, Android runner
     testImplementation(libs.junit)
