@@ -33,6 +33,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.getSystemService
@@ -95,6 +97,26 @@ fun AppTheme(
     )
 }
 
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun MainScreenPreview() = MainScreen("""
+|{
+|  "supportedAbis": ["x86_64", "arm64-v8a"],
+|  "supportedLocales": ["en-US"],
+|  "deviceFeatures": ["android.hardware.audio.output"],
+|  "glExtensions": ["GL_EXT_debug_marker"],
+|  "screenDensity": 320,
+|  "sdkVersion": 36,
+|  "sdkRuntime": {
+|    "supported": true
+|  },
+|  "ramBytes": "2062389248",
+|  "buildBrand": "google",
+|  "buildDevice": "emu64xa",
+|  "socManufacturer": "AOSP",
+|  "socModel": "ranchu"
+|}""".trimMargin()) { }
+
 @Composable
 fun MainScreen(
     resultText: String,
@@ -132,10 +154,12 @@ fun GlExtensionsFetcher(
         }
     }
 
+    val isPreview = LocalInspectionMode.current
+
     AndroidView(
         factory = { context ->
             GLSurfaceView(context).apply {
-                setEGLContextClientVersion(fetchOpenGlEsVersionMajor(context))
+                setEGLContextClientVersion(fetchOpenGlEsVersionMajor(context, isPreview))
                 setRenderer(object : GLSurfaceView.Renderer {
                     override fun onSurfaceCreated(gl: GL10, config: EGLConfig) {
                         val glExtensionsString = gl.glGetString(GL10.GL_EXTENSIONS)
@@ -178,7 +202,11 @@ fun ResultDisplay(text: String, modifier: Modifier = Modifier) {
     }
 }
 
-private fun fetchOpenGlEsVersionMajor(context: Context): Int {
+private fun fetchOpenGlEsVersionMajor(context: Context, isPreview: Boolean): Int {
+    if (isPreview) {
+        return MainViewModel.GL_ES_VERSION_2
+    }
+
     val activityManager = context.getSystemService<ActivityManager>()
     val configInfo = activityManager?.deviceConfigurationInfo
     val glEsVersion = configInfo?.glEsVersion
